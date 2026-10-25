@@ -58,7 +58,7 @@ export function RoadNetwork() {
   const roadEvents = state.events.filter((event) => event.kind === 'road')
 
   return (
-    <div className="space-y-3 p-3 sm:p-4">
+    <div className="space-y-5 p-4 sm:p-5 xl:p-6">
       <ScreenHeader
         kicker="Road network · demo graph"
         title="Inspect and disrupt the route graph"
