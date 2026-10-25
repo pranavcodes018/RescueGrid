@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { LandingPage } from './components/LandingPage';
-
+import { SCENARIO_ORDER } from './data/sagarika'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import IntroScreen from './components/IntroScreen'
 
@@ -35,9 +34,9 @@ const SCREENS: Record<ScreenId, () => React.JSX.Element> = {
 
 
 function AppShell() {
-  const { state } = useSimulation()
+  const { state, actions } = useSimulation()
 
-  const [stage, setStage] = useState<'landing' | 'intro' | 'dashboard'>('landing')
+  const [stage, setStage] = useState<'intro' | 'dashboard'>('intro')
   const mainRef = useRef<HTMLElement | null>(null)
   const Screen = SCREENS[state.screen]
 
@@ -49,18 +48,15 @@ function AppShell() {
     })
   }, [state.screen, stage])
 
-  if (stage === 'landing') {
-    return (
-      <LandingPage
-        onGetStarted={() => setStage('intro')}
-      />
-    )
-  }
-
   if (stage === 'intro') {
     return (
       <IntroScreen
-        onComplete={() => setStage('dashboard')}
+        onComplete={() => {
+          const randomIndex = Math.floor(Math.random() * SCENARIO_ORDER.length)
+          actions.loadScenario(SCENARIO_ORDER[randomIndex])
+          actions.navigate('overview')
+          setStage('dashboard')
+        }}
       />
     )
   }
