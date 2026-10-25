@@ -140,7 +140,7 @@ export function AllocationLab() {
   const previewEmpty = previewPlan.totals.allocated === 0
 
   return (
-    <div className="space-y-3 p-3 sm:p-4">
+    <div className="space-y-5 p-4 sm:p-5 xl:p-6">
       <ScreenHeader
         kicker="Allocation lab · deterministic engine"
         title="Tune the inputs, see the trade-offs"
