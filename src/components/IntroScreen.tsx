@@ -334,6 +334,66 @@ const styles = `
 @media(max-width:850px) { .rg-radar{transform:none;animation:none}.rg-auth-card,.rg-auth-card:hover{transform:none} }
 @media(prefers-reduced-motion:reduce) { .rg-radar,.rg-blip,.rg-stat::after,.rg-hero,.rg-auth-card{animation:none!important} }
 
+
+.rg-map-stage {
+  position: relative;
+  width: min(120%, 660px);
+  aspect-ratio: 1.48;
+  margin: 20px 0 4px -7%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  perspective: 900px;
+}
+.rg-map-art {
+  display: block;
+  width: 112%;
+  max-width: none;
+  height: auto;
+  object-fit: contain;
+  transform: rotateX(3deg) translateY(-2px);
+  filter: drop-shadow(0 24px 28px rgba(0,0,0,.3)) saturate(1.1);
+  animation: rg-map-float 7s ease-in-out infinite;
+}
+.rg-map-scanline {
+  position: absolute;
+  z-index: 1;
+  inset: 5% 0 10%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(79,255,213,.055) 49%, transparent 52%);
+  background-size: 100% 210%;
+  mix-blend-mode: screen;
+  animation: rg-map-scan 6s linear infinite;
+}
+.rg-map-caption {
+  position: absolute;
+  z-index: 2;
+  bottom: 0;
+  left: 9%;
+  right: 2%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 20px;
+  color: #80a7aa;
+  font: 9px var(--rg-mono);
+  letter-spacing: .09em;
+}
+.rg-map-caption span { display:flex;align-items:center;gap:7px; }
+.rg-map-caption i { width:5px;height:5px;border-radius:50%;background:var(--rg-green);box-shadow:0 0 10px var(--rg-green); }
+@keyframes rg-map-float {
+  0%,100% { transform: rotateX(3deg) translateY(0) scale(1); }
+  50% { transform: rotateX(5deg) translateY(-8px) scale(1.012); }
+}
+@keyframes rg-map-scan { from { background-position: 0 -100%; } to { background-position: 0 200%; } }
+@media(max-width:850px) {
+  .rg-map-stage { width:100%;margin:8px 0 10px;aspect-ratio:1.45; }
+  .rg-map-art { width:115%;animation:none; }
+  .rg-map-caption { font-size:8px; }
+}
+@media(prefers-reduced-motion:reduce) { .rg-map-art,.rg-map-scanline { animation:none!important; } }
+
 `
 
 export function IntroScreen({ onComplete }: IntroScreenProps) {
@@ -439,23 +499,10 @@ export function IntroScreen({ onComplete }: IntroScreenProps) {
             and make smarter allocation decisions when every second counts.
           </p>
 
-          <div className="rg-radar-wrap" aria-label="Animated mission radar">
-            <div className="rg-radar">
-              <div className="rg-ring rg-ring-1" />
-              <div className="rg-ring rg-ring-2" />
-              <div className="rg-ring rg-ring-3" />
-              <div className="rg-radar-cross x" />
-              <div className="rg-radar-cross y" />
-              <div className="rg-sweep" />
-              <div className="rg-blip one" />
-              <div className="rg-blip two" />
-              <div className="rg-blip three" />
-              <div className="rg-radar-core"><Radar size={43} strokeWidth={1.2} /></div>
-            </div>
-            <div className="rg-radar-caption">
-              <span><i /> NETWORK ACTIVE</span>
-              <span><i /> SIGNAL STABLE</span>
-            </div>
+          <div className="rg-map-stage" aria-label="Illustrated 3D disaster response map with relief routes and emergency markers">
+            <img className="rg-map-art" src="/rescuegrid-isometric-map.svg" alt="Isometric disaster-response terrain with glowing relief routes, shelter hubs, medical support, and a hazard zone" />
+            <div className="rg-map-scanline" />
+            <div className="rg-map-caption"><span><i /> LIVE ROUTE MODEL</span><span><i /> PRIORITY ZONES MAPPED</span></div>
           </div>
 
           <div className="rg-stats">
