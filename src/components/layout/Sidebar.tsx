@@ -18,9 +18,13 @@ export function Sidebar() {
   return (
     <nav
       aria-label="Primary"
-      className="app-sidebar hidden w-[78px] shrink-0 flex-col border-r border-line bg-night-925/55 lg:flex"
+      className="app-sidebar hidden w-[204px] shrink-0 flex-col border-r border-line/80 bg-night-950/75 px-3 py-4 lg:flex"
     >
-      <div className="flex-1 space-y-1 px-2 py-3">
+      <div className="mb-3 px-2">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-mist-500">Workspace</p>
+        <p className="mt-1 text-xs text-mist-600">Relief operations</p>
+      </div>
+      <div className="flex-1 space-y-1">
         {NAV_ITEMS.map((item) => {
           const Icon = NAV_ICONS[item.id]
           const active = state.screen === item.id
@@ -33,37 +37,37 @@ export function Sidebar() {
               aria-label={`${item.label} — ${item.description}`}
               title={`${item.label} — ${item.description}`}
               className={cn(
-                'group relative flex w-full flex-col items-center gap-1 rounded-lg px-1 py-2.5 transition-colors duration-150',
+                'group relative flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200',
                 active
-                  ? 'bg-signal/[0.08] text-signal-bright'
-                  : 'text-mist-500 hover:bg-white/[0.045] hover:text-mist-200',
+                  ? 'border border-signal/20 bg-signal/[0.09] text-signal-bright shadow-[0_8px_24px_rgba(45,212,191,0.05)]'
+                  : 'border border-transparent text-mist-400 hover:bg-white/[0.04] hover:text-mist-100',
               )}
             >
               {active ? (
                 <span
                   aria-hidden
-                  className="absolute left-0 top-1/2 h-6 w-[2px] -translate-y-1/2 rounded-r bg-signal shadow-[0_0_10px_rgba(45,212,191,0.8)]"
+                  className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-signal shadow-[0_0_10px_rgba(45,212,191,0.65)]"
                 />
               ) : null}
-              <Icon size={17} strokeWidth={1.8} aria-hidden />
-              <span className="text-center text-[8.5px] font-medium leading-[1.15] tracking-[0.01em]">
-                {item.navLabel}
+              <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors', active ? 'bg-signal/10' : 'bg-night-800/70 group-hover:bg-night-700/70')}><Icon size={17} strokeWidth={1.8} aria-hidden /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12px] font-medium leading-4">{item.label}</span>
+                <span className={cn('mt-0.5 block truncate text-[10px] leading-4', active ? 'text-signal/70' : 'text-mist-600')}>{item.description}</span>
               </span>
             </button>
           )
         })}
       </div>
 
-      <div className="border-t border-line/80 p-2">
+      <div className="mt-4 border-t border-line/80 pt-3">
         <div
-          className="rounded-lg border border-line/80 bg-night-850/60 px-1 py-2 text-center"
+          className="flex items-center gap-2.5 rounded-xl border border-line/80 bg-night-850/50 px-3 py-3 text-left"
           title="All simulation state stays in this browser. No live data."
         >
-          <ShieldCheck size={13} className="mx-auto text-signal/70" aria-hidden />
-          <div className="mt-1 font-mono text-[7px] uppercase leading-[1.45] tracking-[0.13em] text-mist-500">
-            Sim data
-            <br />
-            local only
+          <ShieldCheck size={16} className="shrink-0 text-signal/80" aria-hidden />
+          <div>
+            <div className="text-[11px] font-medium text-mist-300">Simulation data</div>
+            <div className="mt-0.5 text-[9px] leading-relaxed text-mist-600">Local prototype · not live</div>
           </div>
         </div>
       </div>
