@@ -54,7 +54,7 @@ export function Overview() {
   const urgentCoverage = urgentDemand > 0 ? urgentMet / urgentDemand : 0
 
   return (
-    <div className="space-y-3 p-3 sm:p-4">
+    <div className="space-y-5 p-4 sm:p-5 xl:p-6">
       <ScreenHeader
         kicker="Situation board · fictional district"
         title={`${scenario.district} — ${preset.name}`}
@@ -90,7 +90,7 @@ export function Overview() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label="Supplies available"
           value={formatNumber(plan.totals.stock)}
