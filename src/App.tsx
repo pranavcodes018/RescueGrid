@@ -1,5 +1,5 @@
-
 import { useEffect, useRef, useState } from 'react'
+import { LandingPage } from './components/LandingPage';
 
 import { ErrorBoundary } from './components/ErrorBoundary'
 import IntroScreen from './components/IntroScreen'
@@ -32,12 +32,12 @@ const SCREENS: Record<ScreenId, () => React.JSX.Element> = {
   reports: Reports,
 }
 
+
+
 function AppShell() {
   const { state } = useSimulation()
 
-  // Keep the welcome page visible until the user chooses demo mode.
-  const [showIntro, setShowIntro] = useState(true)
-
+  const [stage, setStage] = useState<'landing' | 'intro' | 'dashboard'>('landing')
   const mainRef = useRef<HTMLElement | null>(null)
   const Screen = SCREENS[state.screen]
 
@@ -47,20 +47,26 @@ function AppShell() {
       left: 0,
       behavior: 'auto',
     })
-  }, [state.screen])
+  }, [state.screen, stage])
 
-  function enterDemoMode() {
-    setShowIntro(false)
+  if (stage === 'landing') {
+    return (
+      <LandingPage
+        onGetStarted={() => setStage('intro')}
+      />
+    )
+  }
+
+  if (stage === 'intro') {
+    return (
+      <IntroScreen
+        onComplete={() => setStage('dashboard')}
+      />
+    )
   }
 
   return (
     <div className="app-root app-canvas min-h-[100svh] text-mist-100 lg:h-[100svh] lg:overflow-hidden">
-      {/* Welcome / login experience */}
-      {showIntro && (
-        <IntroScreen onComplete={enterDemoMode} />
-      )}
-
-      {/* Main RescueGrid application */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[200] focus:rounded-md focus:border focus:border-signal/50 focus:bg-night-800 focus:px-3 focus:py-2 focus:text-[12px] focus:text-mist-50"
@@ -96,6 +102,8 @@ function AppShell() {
     </div>
   )
 }
+
+
 
 export default function App() {
   return (

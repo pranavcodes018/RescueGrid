@@ -1,292 +1,263 @@
 
 import { useState, type FormEvent } from 'react'
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Fingerprint,
+  LockKeyhole,
+  Mail,
+  Radar,
+  ShieldCheck,
+  Waves,
+  Zap,
+} from 'lucide-react'
 
-interface IntroScreenProps {
+type IntroScreenProps = {
   onComplete: () => void
 }
 
-type Screen = 'landing' | 'login' | 'otp'
+type AuthStep = 'login' | 'otp'
 
 const DEMO_OTP = '123456'
 
-const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+const styles = `
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 .rg-root, .rg-root * { box-sizing: border-box; }
 .rg-root {
-  --bg: #050b14;
-  --panel: rgba(11, 24, 39, .88);
-  --line: rgba(117, 172, 203, .17);
-  --muted: #8da5b9;
-  --white: #f1f8ff;
-  --cyan: #5de4d2;
-  --blue: #58a9ff;
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  overflow: auto;
-  color: var(--white);
-  background:
-    radial-gradient(ellipse at 72% 35%, rgba(12, 103, 128, .18), transparent 38%),
-    radial-gradient(ellipse at 15% 85%, rgba(23, 79, 144, .16), transparent 35%),
-    var(--bg);
-  font-family: 'DM Sans', sans-serif;
+  --rg-bg: #080c10;
+  --rg-panel: rgba(16, 24, 30, .88);
+  --rg-border: rgba(159, 190, 198, .14);
+  --rg-muted: #83969e;
+  --rg-white: #edf5f5;
+  --rg-green: #8ef0c0;
+  --rg-mono: 'DM Mono', monospace;
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--rg-bg);
+  color: var(--rg-white);
+  font-family: 'Manrope', sans-serif;
   isolation: isolate;
 }
 .rg-root button, .rg-root input { font: inherit; }
 .rg-root button { cursor: pointer; }
-.rg-grid {
-  position: absolute; inset: 0; pointer-events: none; opacity: .18;
-  background-image: linear-gradient(rgba(111,174,205,.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(111,174,205,.09) 1px, transparent 1px);
-  background-size: 52px 52px;
-  mask-image: linear-gradient(to bottom, black, transparent 95%);
+.rg-atmosphere {
+  position: absolute; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 51% 34%, rgba(30, 115, 101, .19), transparent 35%),
+    radial-gradient(ellipse at 90% 80%, rgba(35, 87, 117, .12), transparent 36%),
+    linear-gradient(145deg, #0b1216, #080c10 65%);
 }
-.rg-noise {
-  position: absolute; inset: 0; pointer-events: none; opacity: .08;
-  background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(255,255,255,.06) 4px);
+.rg-grid {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(rgba(144, 181, 184, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(144, 181, 184, .035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 92%);
 }
 .rg-topbar {
-  position: relative; z-index: 2; display: flex; align-items: center;
-  justify-content: space-between; padding: 25px clamp(20px, 5vw, 76px);
-  border-bottom: 1px solid rgba(125, 175, 205, .11);
+  position: relative; z-index: 2;
+  display: flex; justify-content: space-between; align-items: center; gap: 18px;
+  padding: 26px clamp(20px, 5vw, 76px);
+  border-bottom: 1px solid rgba(180, 209, 210, .08);
 }
-.rg-brand { display: flex; align-items: center; gap: 12px; }
-.rg-brand-mark {
-  width: 40px; height: 40px; display: grid; place-items: center;
-  border: 1px solid rgba(93,228,210,.5); border-radius: 12px;
-  background: linear-gradient(145deg, rgba(93,228,210,.18), rgba(88,169,255,.08));
-  box-shadow: 0 0 28px rgba(93,228,210,.09);
+.rg-brand { display: flex; align-items: center; gap: 11px; }
+.rg-brand-icon {
+  display: grid; place-items: center; width: 38px; height: 38px;
+  border: 1px solid rgba(142, 240, 192, .35); border-radius: 11px;
+  color: var(--rg-green); background: rgba(142, 240, 192, .07);
 }
-.rg-brand-mark svg { width: 23px; height: 23px; }
-.rg-brand-name {
-  font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700;
-  letter-spacing: -.6px;
+.rg-brand-name { font-size: 14px; font-weight: 800; letter-spacing: .17em; }
+.rg-brand-sub { margin-top: 4px; font: 9px var(--rg-mono); letter-spacing: .12em; color: var(--rg-muted); }
+.rg-online {
+  display: flex; align-items: center; gap: 9px; color: #a9c5bd;
+  font: 10px var(--rg-mono); letter-spacing: .08em;
 }
-.rg-brand-name span { color: var(--cyan); }
-.rg-brand-sub {
-  display: block; margin-top: 2px; color: #7f98ad;
-  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.7px;
+.rg-online-dot, .rg-eyebrow-dot {
+  width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%;
+  background: var(--rg-green); box-shadow: 0 0 12px rgba(142, 240, 192, .65);
 }
-.rg-status {
-  display: flex; align-items: center; gap: 9px; color: #a5c0d0;
-  font: 10px 'DM Mono', monospace; letter-spacing: 1.3px;
+.rg-layout {
+  position: relative; display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+  align-items: center; gap: clamp(34px, 7vw, 112px);
+  width: min(1200px, 100%); min-height: calc(100vh - 148px);
+  margin: auto; padding: 52px clamp(20px, 5vw, 76px) 76px;
 }
-.rg-status-dot {
-  width: 7px; height: 7px; border-radius: 50%; background: var(--cyan);
-  box-shadow: 0 0 12px rgba(93,228,210,.8); animation: rgPulse 2s infinite;
+.rg-hero { position: relative; min-width: 0; }
+.rg-kicker {
+  display: flex; align-items: center; gap: 11px; margin-bottom: 24px;
+  color: var(--rg-green); font: 10px var(--rg-mono); letter-spacing: .15em;
 }
-.rg-main {
-  position: relative; z-index: 1; width: min(1190px, 100%);
-  min-height: calc(100vh - 92px); margin: auto; padding: 46px 28px 35px;
-  display: flex; align-items: center;
-}
-.rg-landing {
-  width: 100%; display: grid; grid-template-columns: 1.05fr .95fr;
-  gap: 28px; align-items: center; animation: rgEnter .65s ease both;
-}
-.rg-copy { padding: 24px 0 35px; }
-.rg-eyebrow {
-  display: inline-flex; align-items: center; gap: 9px;
-  color: var(--cyan); font: 10px 'DM Mono', monospace; letter-spacing: 2px;
-  text-transform: uppercase; margin-bottom: 26px;
-}
-.rg-eyebrow::before { content: ''; width: 25px; height: 1px; background: var(--cyan); }
+.rg-kicker-line { width: 25px; height: 1px; background: var(--rg-green); }
 .rg-heading {
-  max-width: 620px; margin: 0; font: 600 clamp(44px, 5.5vw, 76px)/1.04 'Space Grotesk', sans-serif;
-  letter-spacing: -4px;
+  margin: 0; font-size: clamp(42px, 5.5vw, 74px); font-weight: 600;
+  line-height: 1.04; letter-spacing: -.065em;
 }
-.rg-heading em {
-  color: var(--cyan); font-style: normal;
-  text-shadow: 0 0 36px rgba(93,228,210,.12);
+.rg-heading em { color: var(--rg-green); font-style: normal; }
+.rg-hero-copy {
+  max-width: 455px; margin: 23px 0 0; color: #9aabb1;
+  font-size: 14px; line-height: 1.9;
 }
-.rg-description {
-  max-width: 490px; margin: 25px 0 29px; color: #9bb0c1;
-  font-size: 15px; line-height: 1.85;
+.rg-radar-wrap {
+  position: relative; display: grid; place-items: center;
+  width: min(100%, 410px); aspect-ratio: 1; margin: 22px auto -8px;
 }
-.rg-cta {
-  display: inline-flex; align-items: center; justify-content: center; gap: 14px;
-  min-height: 55px; padding: 0 22px; color: #06131a;
-  border: 1px solid rgba(93,228,210,.8); border-radius: 9px;
-  background: linear-gradient(105deg, #72f0dc, #61cce4);
-  font-weight: 700; font-size: 13px;
-  box-shadow: 0 9px 35px rgba(42,204,190,.13);
-  transition: transform .2s, box-shadow .2s, filter .2s;
+.rg-radar {
+  position: relative; display: grid; place-items: center;
+  width: 76%; aspect-ratio: 1; border-radius: 50%;
+  border: 1px solid rgba(142, 240, 192, .15);
+  background: radial-gradient(circle, rgba(27, 93, 78, .13), rgba(10, 20, 23, .05) 68%, transparent 69%);
 }
-.rg-cta:hover { transform: translateY(-2px); box-shadow: 0 13px 38px rgba(42,204,190,.23); filter: brightness(1.05); }
-.rg-cta svg { width: 17px; height: 17px; }
-.rg-trust {
-  display: flex; flex-wrap: wrap; gap: 18px; margin-top: 28px;
-  color: #8099ad; font: 10px 'DM Mono', monospace; letter-spacing: .5px;
+.rg-ring { position: absolute; border: 1px solid rgba(142, 240, 192, .14); border-radius: 50%; }
+.rg-ring-1 { inset: 12%; }
+.rg-ring-2 { inset: 25%; }
+.rg-ring-3 { inset: 38%; }
+.rg-radar-cross { position: absolute; background: rgba(142, 240, 192, .11); }
+.rg-radar-cross.x { height: 1px; width: 100%; }
+.rg-radar-cross.y { width: 1px; height: 100%; }
+.rg-sweep {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 72%, rgba(92, 227, 174, .16) 90%, transparent 100%);
+  animation: rg-rotate 8s linear infinite;
 }
-.rg-trust span { display: flex; align-items: center; gap: 7px; }
-.rg-trust svg { width: 14px; height: 14px; color: var(--cyan); }
-.rg-visual {
-  min-height: 435px; display: grid; place-items: center; position: relative;
-  perspective: 850px;
+.rg-radar-core {
+  z-index: 1; display: grid; place-items: center; width: 82px; height: 82px;
+  color: var(--rg-green); border: 1px solid rgba(142, 240, 192, .42);
+  border-radius: 24px; background: rgba(12, 36, 31, .88);
+  box-shadow: 0 0 50px rgba(74, 219, 167, .12), inset 0 0 22px rgba(74, 219, 167, .08);
+  animation: rg-float 5s ease-in-out infinite;
 }
-.rg-globe-wrap {
-  position: relative; width: min(370px, 82vw); aspect-ratio: 1;
-  display: grid; place-items: center;
-  animation: rgFloat 7s ease-in-out infinite;
+.rg-blip { position: absolute; z-index: 2; width: 7px; height: 7px; border-radius: 50%; background: var(--rg-green); box-shadow: 0 0 13px var(--rg-green); }
+.rg-blip.one { top: 23%; left: 61%; }
+.rg-blip.two { top: 62%; left: 25%; width: 5px; height: 5px; background: #77b9ff; box-shadow: 0 0 12px #77b9ff; }
+.rg-blip.three { bottom: 23%; right: 27%; width: 5px; height: 5px; }
+.rg-radar-caption {
+  position: absolute; left: 0; right: 0; bottom: 2%; display: flex;
+  justify-content: center; gap: 20px; color: #71868b; font: 9px var(--rg-mono);
+  letter-spacing: .08em;
 }
-.rg-globe {
-  position: absolute; width: 65%; aspect-ratio: 1; border-radius: 50%;
-  overflow: hidden; border: 1px solid rgba(93,228,210,.35);
-  background:
-    radial-gradient(circle at 34% 29%, rgba(74,211,207,.22), transparent 35%),
-    radial-gradient(circle at 68% 70%, rgba(40,111,199,.23), transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(13,57,83,.4), rgba(3,13,24,.98) 73%);
-  box-shadow: inset -18px -8px 35px rgba(0,0,0,.55), 0 0 65px rgba(37,160,178,.12);
+.rg-radar-caption span { display: flex; align-items: center; gap: 7px; }
+.rg-radar-caption i { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--rg-green); }
+.rg-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 2px; }
+.rg-stat {
+  padding: 14px 12px; border: 1px solid var(--rg-border);
+  border-radius: 12px; background: rgba(15, 23, 28, .56);
 }
-.rg-globe::before {
-  content: ''; position: absolute; inset: -20%;
-  background:
-    repeating-linear-gradient(0deg, transparent 0 24px, rgba(93,228,210,.22) 25px, transparent 26px),
-    repeating-linear-gradient(90deg, transparent 0 24px, rgba(93,228,210,.18) 25px, transparent 26px);
-  border-radius: 50%; transform: rotate(-18deg);
-  mask-image: radial-gradient(circle, black 40%, transparent 70%);
-}
-.rg-globe::after {
-  content: ''; position: absolute; inset: 0; border-radius: 50%;
-  background: linear-gradient(115deg, transparent 30%, rgba(93,228,210,.15), transparent 62%);
-}
-.rg-orbit {
-  position: absolute; width: 92%; height: 36%; border: 1px solid rgba(93,228,210,.35);
-  border-radius: 50%; transform: rotate(-32deg);
-}
-.rg-orbit-two {
-  position: absolute; width: 91%; height: 44%; border: 1px solid rgba(88,169,255,.3);
-  border-radius: 50%; transform: rotate(55deg);
-}
-.rg-orbit-three {
-  position: absolute; width: 80%; height: 80%; border: 1px dashed rgba(93,228,210,.15);
-  border-radius: 50%; transform: rotateX(62deg);
-}
-.rg-orbit-dot {
-  position: absolute; top: 17%; right: 15%; width: 9px; height: 9px;
-  background: var(--cyan); border-radius: 50%; box-shadow: 0 0 18px var(--cyan);
-}
-.rg-orbit-dot-two {
-  position: absolute; left: 9%; bottom: 29%; width: 6px; height: 6px;
-  background: var(--blue); border-radius: 50%; box-shadow: 0 0 15px var(--blue);
-}
-.rg-float-card {
-  position: absolute; padding: 13px 15px; border: 1px solid rgba(114,174,204,.22);
-  border-radius: 10px; background: rgba(6,18,31,.83); backdrop-filter: blur(12px);
-  box-shadow: 0 15px 38px rgba(0,0,0,.2); animation: rgFloat 6s ease-in-out infinite;
-}
-.rg-float-card.one { top: 12%; right: -1%; }
-.rg-float-card.two { bottom: 12%; left: -2%; animation-delay: -2s; }
-.rg-card-label { color: #819bad; font: 9px 'DM Mono', monospace; letter-spacing: 1px; }
-.rg-card-value { margin-top: 7px; color: var(--cyan); font: 19px 'Space Grotesk', sans-serif; }
-.rg-card-note { margin-top: 3px; color: #718da1; font-size: 10px; }
-.rg-mini-bars { display: flex; align-items: end; gap: 4px; height: 24px; margin-top: 7px; }
-.rg-mini-bars i { width: 5px; border-radius: 2px; background: var(--cyan); opacity: .8; }
-.rg-auth-layout {
-  width: 100%; display: grid; place-items: center; animation: rgEnter .45s ease both;
-}
+.rg-stat-label { color: #82969c; font: 9px var(--rg-mono); letter-spacing: .05em; }
+.rg-stat-value { margin-top: 9px; font-size: 18px; font-weight: 700; letter-spacing: -.04em; }
+.rg-stat-value small { margin-left: 5px; color: var(--rg-green); font-size: 10px; font-weight: 500; }
 .rg-auth-card {
-  width: min(440px, 100%); padding: clamp(24px, 5vw, 39px);
-  border: 1px solid rgba(117,172,203,.23); border-radius: 18px;
-  background: linear-gradient(145deg, rgba(13,29,45,.94), rgba(6,16,29,.96));
-  box-shadow: 0 28px 100px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.025);
-  backdrop-filter: blur(16px);
+  position: relative; padding: clamp(24px, 3.4vw, 39px);
+  border: 1px solid rgba(163, 203, 205, .18); border-radius: 22px;
+  background: linear-gradient(145deg, rgba(20, 30, 36, .95), rgba(12, 18, 23, .97));
+  box-shadow: 0 24px 90px rgba(0, 0, 0, .26), inset 0 1px 0 rgba(255,255,255,.025);
 }
-.rg-auth-icon {
-  display: grid; place-items: center; width: 47px; height: 47px;
-  margin-bottom: 25px; border: 1px solid rgba(93,228,210,.3);
-  border-radius: 13px; color: var(--cyan); background: rgba(93,228,210,.08);
+.rg-auth-card::before {
+  content: ''; position: absolute; top: -1px; left: 28px; width: 72px; height: 2px;
+  background: var(--rg-green); box-shadow: 0 0 18px rgba(142, 240, 192, .6);
 }
-.rg-auth-icon svg { width: 23px; height: 23px; }
-.rg-auth-kicker { color: var(--cyan); font: 10px 'DM Mono', monospace; letter-spacing: 2px; }
-.rg-auth-title {
-  margin: 12px 0 10px; font: 600 32px/1.15 'Space Grotesk', sans-serif;
-  letter-spacing: -1.1px;
+.rg-auth-eyebrow {
+  display: flex; align-items: center; gap: 8px; color: var(--rg-green);
+  font: 9px var(--rg-mono); letter-spacing: .13em;
 }
-.rg-auth-desc { margin: 0 0 27px; color: #8fa6b9; font-size: 13px; line-height: 1.7; }
-.rg-auth-label {
-  display: block; margin: 17px 0 8px; color: #c3d2df;
-  font-size: 12px; font-weight: 600;
+.rg-auth-title { margin: 21px 0 9px; font-size: 29px; font-weight: 700; letter-spacing: -.055em; }
+.rg-auth-subtitle { margin: 0 0 28px; color: #91a3a9; font-size: 12px; line-height: 1.8; }
+.rg-field { display: block; margin-top: 18px; }
+.rg-field-label {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  margin-bottom: 9px; color: #bdcbce; font-size: 11px; font-weight: 600;
 }
 .rg-input-wrap { position: relative; }
-.rg-auth-input {
-  display: block; width: 100%; height: 48px; padding: 0 13px;
-  color: #edf7ff; border: 1px solid rgba(120,165,195,.24);
-  border-radius: 8px; outline: none; background: rgba(2,10,19,.48);
-  font-size: 13px; transition: border .2s, box-shadow .2s;
+.rg-input-icon {
+  position: absolute; top: 50%; left: 14px; transform: translateY(-50%);
+  color: #758a91; pointer-events: none;
 }
-.rg-auth-input::placeholder { color: #627b8f; }
-.rg-auth-input:focus { border-color: rgba(93,228,210,.7); box-shadow: 0 0 0 3px rgba(93,228,210,.08); }
-.rg-password-toggle {
-  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-  border: 0; background: transparent; color: #8ca5b8; font-size: 11px;
+.rg-input {
+  display: block; width: 100%; height: 48px; padding: 0 44px 0 43px;
+  outline: none; color: #edf5f5; border: 1px solid rgba(153, 185, 190, .17);
+  border-radius: 10px; background: rgba(5, 11, 15, .5); font-size: 12px;
+  transition: border-color .2s, box-shadow .2s;
 }
-.rg-auth-button {
-  width: 100%; min-height: 49px; margin-top: 23px; display: flex;
-  align-items: center; justify-content: center; gap: 10px;
-  border: 1px solid rgba(93,228,210,.6); border-radius: 8px;
-  background: linear-gradient(105deg, #72f0dc, #61cce4);
-  color: #06131a; font-size: 13px; font-weight: 700;
-  transition: transform .2s, filter .2s;
+.rg-input::placeholder { color: #586b72; }
+.rg-input:focus { border-color: rgba(142, 240, 192, .65); box-shadow: 0 0 0 3px rgba(142, 240, 192, .07); }
+.rg-eye {
+  position: absolute; top: 50%; right: 12px; transform: translateY(-50%);
+  display: grid; place-items: center; padding: 5px; color: #81969c;
+  border: 0; background: transparent;
 }
-.rg-auth-button:hover { transform: translateY(-1px); filter: brightness(1.05); }
-.rg-auth-button svg { width: 17px; height: 17px; }
-.rg-auth-secondary {
-  display: block; margin: 17px auto 0; padding: 6px;
-  border: 0; color: #94adbf; background: transparent; font-size: 12px;
-}
-.rg-auth-secondary:hover { color: var(--cyan); }
 .rg-auth-message {
-  margin-top: 17px; padding: 11px 12px; border: 1px solid rgba(93,228,210,.2);
-  border-radius: 8px; background: rgba(93,228,210,.06);
-  color: #a8ddd8; font-size: 12px; line-height: 1.6;
+  margin-top: 15px; padding: 11px 12px; border-radius: 9px;
+  color: #a9d9c7; background: rgba(82, 186, 140, .08);
+  border: 1px solid rgba(142, 240, 192, .2); font-size: 11px; line-height: 1.6;
 }
 .rg-auth-message.error {
-  border-color: rgba(255,120,120,.28); background: rgba(255,100,100,.06); color: #ffb7b7;
+  color: #ffb4ae; background: rgba(238, 91, 91, .08); border-color: rgba(238, 91, 91, .25);
 }
-.rg-demo-note {
-  margin-top: 18px; padding: 12px; border: 1px dashed rgba(118,157,183,.23);
-  border-radius: 8px; color: #8097aa; font-size: 11px; line-height: 1.65;
+.rg-primary {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; min-height: 49px; margin-top: 24px; padding: 12px 15px;
+  color: #07140f; border: 1px solid #a2f7ce; border-radius: 10px;
+  background: linear-gradient(105deg, #a0f4c8, #75dfb0);
+  box-shadow: 0 6px 24px rgba(73, 209, 154, .11);
+  font-size: 12px; font-weight: 800; transition: transform .2s, filter .2s;
 }
-.rg-demo-note strong { color: #b8cbd9; }
-.rg-otp-row { display: flex; gap: 8px; margin-top: 9px; }
-.rg-otp-box {
-  min-width: 0; flex: 1; height: 53px; text-align: center;
-  color: var(--cyan); font: 700 21px 'DM Mono', monospace;
-  border: 1px solid rgba(120,165,195,.28); border-radius: 8px;
-  outline: none; background: rgba(2,10,19,.55);
+.rg-primary:hover { transform: translateY(-1px); filter: brightness(1.06); }
+.rg-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.rg-divider { display: flex; align-items: center; gap: 13px; margin: 23px 0 18px; color: #64777e; font: 9px var(--rg-mono); }
+.rg-divider::before, .rg-divider::after { content: ''; flex: 1; height: 1px; background: rgba(153, 185, 190, .13); }
+.rg-security-note { display: flex; align-items: flex-start; gap: 10px; color: #81949a; font-size: 10px; line-height: 1.7; }
+.rg-security-note svg { flex: 0 0 auto; color: var(--rg-green); margin-top: 1px; }
+.rg-otp-row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; }
+.rg-otp {
+  min-width: 0; width: 100%; height: 51px; padding: 0;
+  text-align: center; color: var(--rg-white); font: 20px var(--rg-mono);
+  outline: none; border: 1px solid rgba(153, 185, 190, .2);
+  border-radius: 9px; background: rgba(5, 11, 15, .5);
 }
-.rg-otp-box:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(93,228,210,.07); }
+.rg-otp:focus { border-color: rgba(142, 240, 192, .65); box-shadow: 0 0 0 3px rgba(142, 240, 192, .07); }
+.rg-back {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 17px;
+  padding: 4px 0; color: #91a3a9; border: 0; background: transparent; font-size: 11px;
+}
+.rg-back:hover { color: var(--rg-green); }
+.rg-demo-hint { margin-top: 12px; color: #71858b; font-size: 10px; line-height: 1.6; }
 .rg-footer {
-  position: relative; z-index: 1; display: flex; justify-content: space-between;
-  gap: 15px; padding: 17px clamp(20px, 5vw, 76px);
-  border-top: 1px solid rgba(125,175,205,.1); color: #60798d;
-  font: 9px 'DM Mono', monospace; letter-spacing: 1px;
+  position: absolute; right: clamp(20px, 5vw, 76px); bottom: 23px; left: clamp(20px, 5vw, 76px);
+  display: flex; justify-content: space-between; gap: 12px;
+  color: #586b71; font: 9px var(--rg-mono); letter-spacing: .04em;
 }
-.rg-footer span:last-child { text-align: right; }
-@keyframes rgFloat { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-9px) rotate(.5deg); } }
-@keyframes rgPulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
-@keyframes rgEnter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-@media (max-width: 800px) {
-  .rg-landing { grid-template-columns: 1fr; gap: 0; }
-  .rg-copy { padding: 30px 0 0; }
-  .rg-heading { letter-spacing: -2.5px; }
-  .rg-visual { min-height: 340px; }
-  .rg-globe-wrap { width: min(300px, 76vw); }
-  .rg-float-card.one { right: 0; }
-  .rg-float-card.two { left: 0; }
-  .rg-main { padding-top: 25px; }
+.rg-footer strong { color: #8b9fa4; font-weight: 400; }
+@keyframes rg-rotate { to { transform: rotate(360deg); } }
+@keyframes rg-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@media (max-width: 850px) {
+  .rg-layout { grid-template-columns: 1fr; gap: 30px; padding-top: 38px; padding-bottom: 82px; }
+  .rg-hero { text-align: center; }
+  .rg-kicker { justify-content: center; margin-bottom: 17px; }
+  .rg-heading { font-size: clamp(43px, 9vw, 66px); }
+  .rg-hero-copy { margin-left: auto; margin-right: auto; }
+  .rg-radar-wrap { width: min(78vw, 330px); margin-top: 0; }
+  .rg-stats { max-width: 500px; margin: 0 auto; text-align: left; }
+  .rg-auth-card { width: min(100%, 480px); margin: 0 auto; }
+  .rg-footer { position: relative; bottom: auto; left: auto; right: auto; padding: 18px 20px 24px; }
 }
-@media (max-width: 480px) {
-  .rg-topbar { padding: 17px 18px; }
-  .rg-brand-name { font-size: 17px; }
-  .rg-status { font-size: 8px; letter-spacing: .5px; }
-  .rg-main { padding: 16px 20px 28px; }
-  .rg-heading { font-size: 46px; }
-  .rg-description { font-size: 14px; }
-  .rg-visual { min-height: 290px; }
-  .rg-footer { font-size: 8px; padding: 15px 18px; }
+@media (max-width: 440px) {
+  .rg-topbar { padding: 18px 17px; }
+  .rg-brand-name { font-size: 12px; }
+  .rg-brand-sub { font-size: 8px; }
+  .rg-online { font-size: 8px; }
+  .rg-layout { padding-left: 17px; padding-right: 17px; }
+  .rg-heading { font-size: 43px; }
+  .rg-radar-wrap { width: min(82vw, 285px); }
+  .rg-stat { padding: 11px 8px; }
+  .rg-stat-label { font-size: 8px; }
+  .rg-stat-value { font-size: 16px; }
+  .rg-auth-card { padding: 23px 19px; }
+  .rg-footer { flex-direction: column; font-size: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .rg-root *, .rg-root *::before, .rg-root *::after {
@@ -296,53 +267,19 @@ const CSS = `
 }
 `
 
-function ShieldIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3 20 6v5c0 5.2-3.4 8.4-8 10-4.6-1.6-8-4.8-8-10V6l8-3Z" />
-      <path d="m8.5 12 2.3 2.3 4.8-5" />
-    </svg>
-  )
-}
-
-function ArrowIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 12h14M13 6l6 6-6 6" />
-    </svg>
-  )
-}
-
-function LockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="4" y="10" width="16" height="11" rx="2" />
-      <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
-    </svg>
-  )
-}
-
-function MailIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3 7 9 6 9-6" />
-    </svg>
-  )
-}
-
-export default function IntroScreen({ onComplete }: IntroScreenProps) {
-  const [screen, setScreen] = useState<Screen>('landing')
+export function IntroScreen({ onComplete }: IntroScreenProps) {
+  const [step, setStep] = useState<AuthStep>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [otp, setOtp] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [messageIsError, setMessageIsError] = useState(false)
+  const [verifiedEmail, setVerifiedEmail] = useState('')
 
-  function goToLogin() {
-    setMessage('')
-    setScreen('login')
+  function showError(text: string) {
+    setMessage(text)
+    setMessageIsError(true)
   }
 
   function handleLogin(event: FormEvent<HTMLFormElement>) {
@@ -350,264 +287,280 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
     setMessage('')
     setMessageIsError(false)
 
-    if (!email.trim() || !password) {
-      setMessageIsError(true)
-      setMessage('Please enter both your email address and password.')
+    const cleanEmail = email.trim()
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      showError('Enter a valid email address to continue.')
       return
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setMessageIsError(true)
-      setMessage('Enter a valid email address to continue.')
+    if (password.trim().length < 6) {
+      showError('Your password must contain at least 6 characters.')
       return
     }
 
-    // Demo flow only: no real password authentication or email is performed.
+    setVerifiedEmail(cleanEmail)
+    setStep('otp')
     setOtp('')
-    setScreen('otp')
-    setMessage('Demo mode: your verification screen is ready. No email has been sent.')
+    setMessage('Demo mode: enter the six-digit verification code shown below.')
+    setMessageIsError(false)
   }
 
-  function handleOtp(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setMessage('')
-    setMessageIsError(false)
+  function handleOtpChange(value: string) {
+    setOtp(value.replace(/\D/g, '').slice(0, 6))
+    if (messageIsError) {
+      setMessage('')
+      setMessageIsError(false)
+    }
+  }
 
-    if (otp !== DEMO_OTP) {
-      setMessageIsError(true)
-      setMessage('Incorrect demo code. Enter 123456 to continue.')
+  function handleVerify(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (otp.length !== 6) {
+      showError('Enter all six digits of the verification code.')
       return
     }
 
-    // This closes the intro overlay and reveals the existing RescueGrid dashboard.
+    if (otp !== DEMO_OTP) {
+      showError('That code is incorrect. Try the demo code 123456.')
+      return
+    }
+
+    setMessage('')
+    setMessageIsError(false)
     onComplete()
   }
 
-  function resendDemoOtp() {
-    setOtp('')
-    setMessageIsError(false)
-    setMessage('Demo verification code: 123456. This is a simulation; no email was sent.')
-  }
-
   return (
-    <div className="rg-root">
-      <style>{CSS}</style>
-      <div className="rg-grid" />
-      <div className="rg-noise" />
+    <main className="rg-root">
+      <style>{styles}</style>
+      <div className="rg-atmosphere" aria-hidden="true" />
+      <div className="rg-grid" aria-hidden="true" />
 
       <header className="rg-topbar">
         <div className="rg-brand">
-          <div className="rg-brand-mark"><ShieldIcon /></div>
+          <div className="rg-brand-icon"><ShieldCheck size={22} /></div>
           <div>
-            <div className="rg-brand-name">Rescue<span>Grid</span></div>
-            <span className="rg-brand-sub">EMERGENCY RESPONSE SYSTEM</span>
+            <div className="rg-brand-name">RESCUEGRID</div>
+            <div className="rg-brand-sub">EMERGENCY RESPONSE INTELLIGENCE</div>
           </div>
         </div>
-        <div className="rg-status">
-          <span className="rg-status-dot" />
-          SYSTEM SIMULATION READY
+        <div className="rg-online">
+          <span className="rg-online-dot" />
+          SYSTEM OPERATIONAL
         </div>
       </header>
 
-      <main className="rg-main">
-        {screen === 'landing' && (
-          <section className="rg-landing">
-            <div className="rg-copy">
-              <div className="rg-eyebrow">Disaster response intelligence</div>
-              <h1 className="rg-heading">
-                When every<br />
-                second <em>matters.</em>
-              </h1>
-              <p className="rg-description">
-                A decision-support command center for emergency resource
-                allocation. Coordinate essential supplies, compare response
-                strategies, and understand how every decision impacts
-                vulnerable communities.
-              </p>
-              <button className="rg-cta" onClick={goToLogin}>
-                Launch Command Center <ArrowIcon />
-              </button>
-              <div className="rg-trust">
-                <span><ShieldIcon /> FAIRNESS-AWARE ALLOCATION</span>
-                <span><LockIcon /> CONTROLLED DEMO ACCESS</span>
-              </div>
+      <div className="rg-layout">
+        <section className="rg-hero">
+          <div className="rg-kicker">
+            <span className="rg-kicker-line" />
+            MISSION CONTROL / FIELD SYSTEMS
+          </div>
+
+          <h1 className="rg-heading">
+            When every route
+            <br />
+            <em>matters.</em>
+          </h1>
+
+          <p className="rg-hero-copy">
+            Coordinate emergency resources, understand road conditions,
+            and make smarter allocation decisions when every second counts.
+          </p>
+
+          <div className="rg-radar-wrap" aria-label="Animated mission radar">
+            <div className="rg-radar">
+              <div className="rg-ring rg-ring-1" />
+              <div className="rg-ring rg-ring-2" />
+              <div className="rg-ring rg-ring-3" />
+              <div className="rg-radar-cross x" />
+              <div className="rg-radar-cross y" />
+              <div className="rg-sweep" />
+              <div className="rg-blip one" />
+              <div className="rg-blip two" />
+              <div className="rg-blip three" />
+              <div className="rg-radar-core"><Radar size={43} strokeWidth={1.2} /></div>
             </div>
-
-            <div className="rg-visual" aria-label="Animated abstract globe representing a connected emergency response network">
-              <div className="rg-globe-wrap">
-                <div className="rg-orbit" />
-                <div className="rg-orbit-two" />
-                <div className="rg-orbit-three" />
-                <div className="rg-globe" />
-                <div className="rg-orbit-dot" />
-                <div className="rg-orbit-dot-two" />
-                <div className="rg-float-card one">
-                  <div className="rg-card-label">RESPONSE NETWORK</div>
-                  <div className="rg-card-value">CONNECTED</div>
-                  <div className="rg-card-note">Simulation environment</div>
-                </div>
-                <div className="rg-float-card two">
-                  <div className="rg-card-label">RESOURCE MONITOR</div>
-                  <div className="rg-card-value">ACTIVE</div>
-                  <div className="rg-mini-bars">
-                    {[10, 17, 13, 23, 16, 21, 14, 24, 18, 12, 22, 16].map((height, i) => (
-                      <i key={i} style={{ height }} />
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <div className="rg-radar-caption">
+              <span><i /> NETWORK ACTIVE</span>
+              <span><i /> SIGNAL STABLE</span>
             </div>
-          </section>
-        )}
+          </div>
 
-        {screen === 'login' && (
-          <section className="rg-auth-layout">
-            <div className="rg-auth-card">
-              <div className="rg-auth-icon"><LockIcon /></div>
-              <div className="rg-auth-kicker">COMMAND CENTER ACCESS</div>
-              <h1 className="rg-auth-title">Welcome back.</h1>
-              <p className="rg-auth-desc">
-                Enter your details to continue to the RescueGrid emergency
-                response command center.
+          <div className="rg-stats">
+            <div className="rg-stat">
+              <div className="rg-stat-label">RESPONSE MODE</div>
+              <div className="rg-stat-value">Adaptive <small>●</small></div>
+            </div>
+            <div className="rg-stat">
+              <div className="rg-stat-label">ROUTE ENGINE</div>
+              <div className="rg-stat-value">Ready <small>↗</small></div>
+            </div>
+            <div className="rg-stat">
+              <div className="rg-stat-label">FIELD STATUS</div>
+              <div className="rg-stat-value">Online <small>●</small></div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rg-auth-card" aria-labelledby="rg-auth-title">
+          {step === 'login' ? (
+            <>
+              <div className="rg-auth-eyebrow">
+                <Fingerprint size={15} />
+                SECURE ACCESS / 01
+              </div>
+              <h2 className="rg-auth-title" id="rg-auth-title">Welcome, operator.</h2>
+              <p className="rg-auth-subtitle">
+                Sign in to access the RescueGrid emergency response command center.
               </p>
 
-              <form onSubmit={handleLogin}>
-                <label className="rg-auth-label" htmlFor="rg-email">Email address</label>
-                <div className="rg-input-wrap">
-                  <input
-                    id="rg-email"
-                    className="rg-auth-input"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    required
-                  />
-                </div>
+              <form onSubmit={handleLogin} noValidate>
+                <label className="rg-field">
+                  <span className="rg-field-label">Email address</span>
+                  <span className="rg-input-wrap">
+                    <Mail className="rg-input-icon" size={16} />
+                    <input
+                      className="rg-input"
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      placeholder="operator@example.com"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      required
+                    />
+                  </span>
+                </label>
 
-                <label className="rg-auth-label" htmlFor="rg-password">Password</label>
-                <div className="rg-input-wrap">
-                  <input
-                    id="rg-password"
-                    className="rg-auth-input"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    required
-                    style={{ paddingRight: 66 }}
-                  />
-                  <button
-                    type="button"
-                    className="rg-password-toggle"
-                    onClick={() => setShowPassword((value) => !value)}
+                <label className="rg-field">
+                  <span className="rg-field-label">Password</span>
+                  <span className="rg-input-wrap">
+                    <LockKeyhole className="rg-input-icon" size={16} />
+                    <input
+                      className="rg-input"
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      required
+                    />
+                    <button
+                      className="rg-eye"
+                      type="button"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      onClick={() => setShowPassword((current) => !current)}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </span>
+                </label>
+
+                {message && (
+                  <div
+                    className={`rg-auth-message${messageIsError ? ' error' : ''}`}
+                    role="status"
+                    aria-live="polite"
                   >
-                    {showPassword ? 'Hide' : 'Show'}
-                  </button>
-                </div>
+                    {message}
+                  </div>
+                )}
 
-                <button className="rg-auth-button" type="submit">
-                  Continue to verification <ArrowIcon />
+                <button className="rg-primary" type="submit">
+                  Continue securely <ArrowRight size={17} />
                 </button>
               </form>
 
-              {message && (
-                <div className={`rg-auth-message${messageIsError ? ' error' : ''}`} role="status">
-                  {message}
-                </div>
-              )}
-
-              <div className="rg-demo-note">
-                <strong>Demo sign-in</strong><br />
-                This prototype checks that the fields are filled in, but it does
-                not authenticate or store your credentials. OTP delivery is simulated.
+              <div className="rg-divider">SECURITY PROTOCOL</div>
+              <div className="rg-security-note">
+                <ShieldCheck size={17} />
+                <span>
+                  A one-time verification code is required before entering
+                  the command center.
+                </span>
               </div>
-
-              <button className="rg-auth-secondary" type="button" onClick={() => {
-                setMessage('')
-                setScreen('landing')
-              }}>
-                ← Back to landing page
-              </button>
-            </div>
-          </section>
-        )}
-
-        {screen === 'otp' && (
-          <section className="rg-auth-layout">
-            <div className="rg-auth-card">
-              <div className="rg-auth-icon"><MailIcon /></div>
-              <div className="rg-auth-kicker">IDENTITY VERIFICATION</div>
-              <h1 className="rg-auth-title">Verify access.</h1>
-              <p className="rg-auth-desc">
-                Enter the six-digit demo verification code to open the
-                RescueGrid command center.
+            </>
+          ) : (
+            <>
+              <div className="rg-auth-eyebrow">
+                <CheckCircle2 size={15} />
+                IDENTITY CHECK / 02
+              </div>
+              <h2 className="rg-auth-title" id="rg-auth-title">Verify your access.</h2>
+              <p className="rg-auth-subtitle">
+                Enter the six-digit code to continue. Verification is being
+                simulated for this demo.
               </p>
 
-              <div className="rg-demo-note" style={{ marginTop: 0, marginBottom: 20 }}>
-                <strong>Demo verification code: 123456</strong><br />
-                This code is shown for demonstration purposes. No email or SMS has been sent.
+              <div className="rg-security-note">
+                <Mail size={17} />
+                <span>Verification address: <strong>{verifiedEmail}</strong></span>
               </div>
 
-              <form onSubmit={handleOtp}>
-                <label className="rg-auth-label" htmlFor="rg-otp">Six-digit verification code</label>
-                <input
-                  id="rg-otp"
-                  className="rg-auth-input"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  pattern="[0-9]{6}"
-                  maxLength={6}
-                  placeholder="Enter 123456"
-                  value={otp}
-                  onChange={(event) => {
-                    setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))
-                    setMessage('')
-                    setMessageIsError(false)
-                  }}
-                  required
-                  style={{
-                    height: 58,
-                    textAlign: 'center',
-                    letterSpacing: 9,
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: 22,
-                  }}
-                />
+              <form onSubmit={handleVerify} noValidate>
+                <label className="rg-field">
+                  <span className="rg-field-label">Verification code</span>
+                  <input
+                    className="rg-input"
+                    style={{ paddingLeft: 14, fontFamily: 'DM Mono, monospace', letterSpacing: '.16em' }}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    placeholder="Enter 6-digit code"
+                    value={otp}
+                    onChange={(event) => handleOtpChange(event.target.value)}
+                    required
+                  />
+                </label>
 
-                <button className="rg-auth-button" type="submit">
-                  Verify and open dashboard <ArrowIcon />
+                {message && (
+                  <div
+                    className={`rg-auth-message${messageIsError ? ' error' : ''}`}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {message}
+                  </div>
+                )}
+
+                <button className="rg-primary" type="submit">
+                  Verify and enter <ArrowUpRight size={17} />
                 </button>
               </form>
 
-              {message && (
-                <div className={`rg-auth-message${messageIsError ? ' error' : ''}`} role="status">
-                  {message}
-                </div>
-              )}
+              <div className="rg-auth-message">
+                <Zap size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
+                Demo verification code: <strong>{DEMO_OTP}</strong>
+              </div>
 
-              <button className="rg-auth-secondary" type="button" onClick={resendDemoOtp}>
-                Resend demo code
+              <button
+                className="rg-back"
+                type="button"
+                onClick={() => {
+                  setStep('login')
+                  setOtp('')
+                  setMessage('')
+                  setMessageIsError(false)
+                }}
+              >
+                <ArrowRight size={14} style={{ transform: 'rotate(180deg)' }} />
+                Back to sign in
               </button>
-              <button className="rg-auth-secondary" type="button" onClick={() => {
-                setMessage('')
-                setMessageIsError(false)
-                setScreen('login')
-              }}>
-                ← Back to sign in
-              </button>
-            </div>
-          </section>
-        )}
-      </main>
+            </>
+          )}
+        </section>
+      </div>
 
       <footer className="rg-footer">
-        <span>RESCUEGRID // DISASTER RESPONSE INTELLIGENCE</span>
-        <span>SIMULATED ENVIRONMENT · DEMO ACCESS</span>
+        <span><strong>SAGARIKA DISTRICT</strong> · COASTAL RESPONSE SIMULATION</span>
+        <span><Waves size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 5 }} /> DEMO ENVIRONMENT · DATA IS SIMULATED</span>
       </footer>
-    </div>
+    </main>
   )
 }
+export default IntroScreen
