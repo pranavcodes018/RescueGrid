@@ -58,7 +58,7 @@ export function Scenarios() {
   const activeStat = stats[state.scenarioId]
 
   return (
-    <div className="space-y-3 p-3 sm:p-4">
+    <div className="space-y-5 p-4 sm:p-5 xl:p-6">
       <ScreenHeader
         kicker="Scenarios · fictional presets"
         title="Choose the simulated operating picture"
