@@ -3,7 +3,6 @@ import { SCENARIO_ORDER } from './data/sagarika'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import IntroScreen from './components/IntroScreen'
 
-import { BottomStrip } from './components/layout/BottomStrip'
 import { MobileNav } from './components/layout/MobileNav'
 import { MobileSheet } from './components/layout/MobileSheet'
 import { RightPanel } from './components/layout/RightPanel'
@@ -89,7 +88,6 @@ function AppShell() {
             <RightPanel />
           </div>
 
-          <BottomStrip />
         </div>
       </div>
 
