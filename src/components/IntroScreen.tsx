@@ -265,6 +265,75 @@ const styles = `
     scroll-behavior: auto !important; transition-duration: .01ms !important;
   }
 }
+
+/* Cinematic 3D command-deck upgrade */
+.rg-root {
+  background: radial-gradient(ellipse at 19% 48%, rgba(24,130,109,.13), transparent 36%), radial-gradient(ellipse at 83% 24%, rgba(68,118,164,.12), transparent 34%), #05090d;
+}
+.rg-atmosphere {
+  background: radial-gradient(ellipse at 48% 45%, rgba(26,119,99,.24), transparent 36%), radial-gradient(ellipse at 78% 78%, rgba(42,91,145,.16), transparent 35%), linear-gradient(135deg,#081219 0%,#05090e 56%,#071019 100%);
+}
+.rg-grid {
+  background-image: linear-gradient(rgba(112,231,203,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(112,231,203,.055) 1px,transparent 1px);
+  background-size: 42px 42px; transform: perspective(800px) rotateX(58deg) scale(1.7); transform-origin: 50% 100%; opacity: .36;
+  mask-image: linear-gradient(to bottom,transparent 5%,black 78%);
+}
+.rg-layout { width: min(1320px,100%); gap: clamp(34px,6vw,92px); }
+.rg-hero { animation: rg-hero-arrive .9s cubic-bezier(.2,.75,.2,1) both; }
+.rg-heading { text-shadow: 0 8px 45px rgba(0,0,0,.35); }
+.rg-heading em {
+  background: linear-gradient(100deg,#a8ffd1 0%,#63e8cf 48%,#8bd5ff 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 25px rgba(98,232,207,.16));
+}
+.rg-radar-wrap { perspective: 1000px; filter: drop-shadow(0 30px 35px rgba(0,0,0,.26)); transform-style: preserve-3d; }
+.rg-radar {
+  width: 73%; overflow: visible; transform: rotateX(17deg) rotateZ(-8deg) translateZ(0); transform-style: preserve-3d;
+  border-color: rgba(121,255,211,.28);
+  background: radial-gradient(circle at 50% 50%,rgba(29,116,94,.24),rgba(7,19,24,.38) 62%,rgba(4,10,16,.25) 70%);
+  box-shadow: 0 0 0 12px rgba(83,226,187,.018),0 0 0 28px rgba(83,226,187,.012),inset 0 0 65px rgba(64,235,190,.09),0 0 70px rgba(36,224,177,.09);
+  animation: rg-radar-hover 8s ease-in-out infinite;
+}
+.rg-radar::before,.rg-radar::after { content:'';position:absolute;inset:-8%;border:1px solid rgba(105,231,202,.16);border-radius:50%;transform:translateZ(-18px);pointer-events:none; }
+.rg-radar::after { inset:-16%;border-color:rgba(105,231,202,.075);transform:translateZ(-34px); }
+.rg-sweep { background: conic-gradient(from 0deg,transparent 0 66%,rgba(92,227,174,.025) 76%,rgba(92,227,174,.22) 94%,transparent 100%); }
+.rg-radar-core {
+  border-radius:25px;transform:translateZ(34px) rotateZ(8deg);background:linear-gradient(145deg,rgba(18,64,53,.96),rgba(7,24,27,.98));
+  box-shadow:0 16px 35px rgba(0,0,0,.36),0 0 55px rgba(74,219,167,.19),inset 0 1px rgba(255,255,255,.16),inset 0 0 22px rgba(74,219,167,.12);
+}
+.rg-blip { box-shadow:0 0 0 5px rgba(142,240,192,.08),0 0 18px var(--rg-green); }
+.rg-blip.one { animation:rg-blip-pulse 2.6s ease-in-out infinite; }
+.rg-blip.two { animation:rg-blip-pulse 3.2s .7s ease-in-out infinite; }
+.rg-blip.three { animation:rg-blip-pulse 2.8s 1.2s ease-in-out infinite; }
+.rg-stat {
+  position:relative;overflow:hidden;border-color:rgba(145,222,206,.15);
+  background:linear-gradient(145deg,rgba(22,39,43,.64),rgba(8,15,21,.74));
+  box-shadow:inset 0 1px rgba(255,255,255,.035),0 12px 25px rgba(0,0,0,.1);
+  transition:transform .25s ease,border-color .25s ease,background .25s ease;
+}
+.rg-stat::after { content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 25%,rgba(142,240,192,.07),transparent 68%);transform:translateX(-120%);animation:rg-stat-shimmer 7s ease-in-out infinite; }
+.rg-stat:hover { transform:translateY(-4px);border-color:rgba(142,240,192,.38); }
+.rg-auth-card {
+  overflow:hidden;border-color:rgba(142,240,192,.22);
+  background:radial-gradient(ellipse at 100% 0%,rgba(61,166,139,.12),transparent 42%),linear-gradient(145deg,rgba(18,32,38,.94),rgba(7,14,20,.97));
+  box-shadow:0 32px 100px rgba(0,0,0,.42),0 0 65px rgba(48,207,164,.045),inset 0 1px rgba(255,255,255,.055);
+  backdrop-filter:blur(22px);transform:perspective(1200px) rotateY(-2deg) rotateX(1deg);
+  transition:transform .45s cubic-bezier(.2,.75,.2,1),border-color .3s,box-shadow .3s;
+  animation:rg-card-arrive 1s .12s cubic-bezier(.2,.75,.2,1) both;
+}
+.rg-auth-card:hover { transform:perspective(1200px) rotateY(0deg) rotateX(0deg) translateY(-3px);border-color:rgba(142,240,192,.34);box-shadow:0 38px 110px rgba(0,0,0,.46),0 0 75px rgba(48,207,164,.07),inset 0 1px rgba(255,255,255,.06); }
+.rg-auth-card::after { content:'';position:absolute;top:0;right:0;width:150px;height:150px;background:radial-gradient(circle at top right,rgba(142,240,192,.1),transparent 70%);pointer-events:none; }
+.rg-primary { position:relative;overflow:hidden;background:linear-gradient(105deg,#a8ffd1,#6de4c2 55%,#9be7f5);box-shadow:0 8px 28px rgba(73,209,154,.18),inset 0 1px rgba(255,255,255,.55); }
+.rg-primary::after { content:'';position:absolute;top:-30%;bottom:-30%;left:-45%;width:30%;transform:skewX(-20deg);background:rgba(255,255,255,.36);transition:left .55s ease; }
+.rg-primary:hover::after { left:125%; }
+.rg-footer { color:#637d83; }
+@keyframes rg-radar-hover { 0%,100%{transform:rotateX(17deg) rotateZ(-8deg) translateY(0)}50%{transform:rotateX(21deg) rotateZ(-5deg) translateY(-7px)} }
+@keyframes rg-blip-pulse { 0%,100%{opacity:1;box-shadow:0 0 0 4px rgba(142,240,192,.07),0 0 14px var(--rg-green)}50%{opacity:.65;box-shadow:0 0 0 10px rgba(142,240,192,0),0 0 22px var(--rg-green)} }
+@keyframes rg-stat-shimmer { 0%,72%,100%{transform:translateX(-120%)}84%{transform:translateX(120%)} }
+@keyframes rg-hero-arrive { from{opacity:0;transform:translate3d(-22px,10px,0)}to{opacity:1;transform:translate3d(0,0,0)} }
+@keyframes rg-card-arrive { from{opacity:0;transform:perspective(1200px) rotateY(-7deg) translate3d(20px,12px,0)}to{opacity:1;transform:perspective(1200px) rotateY(-2deg) translate3d(0,0,0)} }
+@media(max-width:850px) { .rg-radar{transform:none;animation:none}.rg-auth-card,.rg-auth-card:hover{transform:none} }
+@media(prefers-reduced-motion:reduce) { .rg-radar,.rg-blip,.rg-stat::after,.rg-hero,.rg-auth-card{animation:none!important} }
+
 `
 
 export function IntroScreen({ onComplete }: IntroScreenProps) {
