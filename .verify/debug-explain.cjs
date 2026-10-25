@@ -1,0 +1,15 @@
+const { chromium } = require('playwright-core')
+const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+;(async () => {
+  const browser = await chromium.launch({ executablePath: CHROME, headless: true })
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+  await page.goto('http://127.0.0.1:5173/', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(800)
+  console.log('tabs:', await page.getByRole('tab').allInnerTexts())
+  await page.getByRole('tab', { name: 'Explain' }).click()
+  await page.waitForTimeout(400)
+  console.log('selected:', await page.getByRole('tab', { name: 'Explain' }).getAttribute('aria-selected'))
+  const t = await page.locator('.app-rightpanel').innerText()
+  console.log(t.slice(0, 700))
+  await browser.close()
+})()
